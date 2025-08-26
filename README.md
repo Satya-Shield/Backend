@@ -1,4 +1,4 @@
-# Gen AI Exchange Backend
+# Python Project with uv
 
 This repository uses Python with [uv](https://github.com/astral-sh/uv) for dependency management.
 
@@ -20,3 +20,15 @@ uv run run.py
 ```
 
 The backend will start at port 8000.
+
+## Managing Dependencies
+
+### Add a dependency
+```bash
+uv add fastapi
+```
+
+### Remove a dependency
+```bash
+uv remove fastapi
+```
