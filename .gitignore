@@ -10,3 +10,5 @@ wheels/
 .venv
 .env
 uv.lock
+
+*.log
