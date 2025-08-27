@@ -1,6 +1,6 @@
 import os, requests
 from langchain_core.prompts import ChatPromptTemplate
-# from app.agent.tools import tavily
+from app.agent.tools import tavily
 # from app.core.settings import llm #in settings.py
 
 from pydantic import BaseModel
@@ -8,8 +8,10 @@ from google import genai
 
 from app.agent.state import State
 from app.utils import read_prompt
+from app.core import get_settings
 from app.models import client
 
+settings = get_settings()
 client = genai.Client()
 
 def extract_claims(state: State):
@@ -31,31 +33,28 @@ def extract_claims(state: State):
 
 
 def evidence_retrieval(state: State):
-    factcheck_api_key = os.environ.get("GOOGLE_FACT_CHECK_API_KEY", "")
-    kg_api_key = os.environ.get("GOOGLE_KG_API_KEY", "")
-
     evidence = {}
 
     for claim in state["claims"]:
         fact_url = (
             f"https://factchecktools.googleapis.com/v1alpha1/claims:search"
-            f"?query={claim}&key={factcheck_api_key}"
+            f"?query={claim}&key={settings.factcheck_api_key}"
         )
         fact_res = requests.get(fact_url).json()
 
-
-
         if fact_res:
-            evidence[claim] = {"factcheck":fact_res}
-
+            evidence[claim] = {"factcheck": fact_res}
         else:
-            evidence[claim] = {"factcheck":{}}
+            response = tavily.invoke(claim)
+            state["evidence"][claim] = {"factcheck":response}
 
-    return {**state, "evidence": evidence}
+    return {
+        "evidence": evidence
+    }
 
 
 # def tools_check(state: State):
-#     for claim,evi in state.get("evidence",{}).items():
+#     for claim, evi in state.get("evidence",{}).items():
 #         if not evi.get("factcheck"):
 #             response = tavily.invoke(claim)
 #             state["evidence"][claim] = {"factcheck":response}
@@ -93,15 +92,5 @@ def verdict_and_explainer(state: State):
     return {**state, "verdicts": verdicts, "explanations": explanations}
 
 if __name__ == '__main__':
-    factcheck_api_key = os.environ.get("GOOGLE_FACT_CHECK_API_KEY", "")
-    kg_api_key = os.environ.get("GOOGLE_KG_API_KEY", "")
-
-    evidence = {}
-
-    for claim in ["Paris is capital of India."]:
-        fact_url = (
-            f"https://factchecktools.googleapis.com/v1alpha1/claims:search"
-            f"?query={claim}&key={factcheck_api_key}"
-        )
-        fact_res = requests.get(fact_url).json()
-        print(fact_res)
+    response = tavily.invoke("paris is capital of india")
+    print(response)
