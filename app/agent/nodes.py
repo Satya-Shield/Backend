@@ -1,11 +1,9 @@
-import os, requests
 from langchain_core.prompts import ChatPromptTemplate
-from app.agent.tools import tavily
-# from app.core.settings import llm #in settings.py
-
 from pydantic import BaseModel
 from google import genai
+import requests
 
+from app.agent.tools import tavily
 from app.agent.state import State
 from app.utils import read_prompt
 from app.core import get_settings
@@ -64,8 +62,7 @@ def verdict_and_explainer(state: State):
     verdicts = {}
     explanations = {}
 
-    for claim, evi in state.get("evidence", {}).items():
-        # Create the prompt template
+    for claim, evi in state['evidence'].items():
         prompt = ChatPromptTemplate.from_messages([
             ("system", "You are a fact-checking assistant."),
             ("human", "Claim: {claim} Evidence: {evi} 1. Provide a clear verdict (True/False/Uncertain) 2. Confidence Score(0-100) and also 3. educate user on the underlying reasons a piece of content might be misleading."),
