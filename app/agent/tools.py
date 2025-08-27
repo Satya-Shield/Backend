@@ -1,9 +1,7 @@
-import os, requests
 from langchain_community.tools import ArxivQueryRun, WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper, ArxivAPIWrapper
 from langchain_community.tools.tavily_search import TavilySearchResults
 
-# Initialize Arxiv
 api_arxiv_wrapper = ArxivAPIWrapper(top_k_results=2, doc_content_chars_max=500)
 arxiv = ArxivQueryRun(api_wrapper=api_arxiv_wrapper, description="Query arxiv papers")
 
