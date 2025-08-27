@@ -59,7 +59,7 @@ def verdict_and_explainer(state: State):
         # Create the prompt template
         prompt = ChatPromptTemplate.from_messages([
             ("system", "You are a fact-checking assistant."),
-            ("human", "Claim: {claim} Evidence: {evi} Provide a clear verdict (True/False/Uncertain) and also educate user on the underlying reasons a piece of content might be misleading."),
+            ("human", "Claim: {claim} Evidence: {evi} 1. Provide a clear verdict (True/False/Uncertain) 2. Confidence Score(0-100) and also 3. educate user on the underlying reasons a piece of content might be misleading."),
         ])
 
         # Bind the template with the LLM
