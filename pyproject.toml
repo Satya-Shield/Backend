@@ -7,6 +7,7 @@ requires-python = ">=3.11"
 dependencies = [
     "arxiv>=2.2.0",
     "fastapi>=0.116.1",
+    "google-genai>=1.31.0",
     "httpx>=0.28.1",
     "ipynb>=0.5.1",
     "langchain>=0.3.27",

@@ -1,18 +1,15 @@
 import os
-import logging
-from functools import lru_cache
 from pydantic_settings import BaseSettings
-from langchain.chat_models import init_chat_model
+from functools import lru_cache
 from dotenv import load_dotenv
+import logging
 
 load_dotenv(override=True)
 
-os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY")
-os.environ["GOOGLE_FACT_CHECK_API_KEY"] = os.getenv("GOOGLE_FACT_CHECK_API_KEY")
-os.environ["GOOGLE_KG_API_KEY"] = os.getenv("GOOGLE_KG_API_KEY")
-os.environ["TAVILY_API_KEY"] = os.getenv("TAVILY_API_KEY")
-# LLM setup
-llm = init_chat_model("groq:llama-3.1-8b-instant")
+# os.environ["GOOGLE_FACT_CHECK_API_KEY"] = os.getenv("GOOGLE_FACT_CHECK_API_KEY")
+# os.environ["GOOGLE_KG_API_KEY"] = os.getenv("GOOGLE_KG_API_KEY")
+# os.environ["TAVILY_API_KEY"] = os.getenv("TAVILY_API_KEY")
+# # LLM setup
 
 class Settings(BaseSettings):
     """Application settings.
