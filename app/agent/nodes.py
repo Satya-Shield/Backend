@@ -1,6 +1,6 @@
-from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
 from google import genai
+from typing import List
 import requests
 
 from app.agent.tools import tavily
@@ -59,34 +59,33 @@ def evidence_retrieval(state: State):
 
 
 def verdict_and_explainer(state: State):
-    verdicts = {}
-    explanations = {}
+    result = {}
+    system_prompt = read_prompt("explainer_system_prompt")
+
+    class Result(BaseModel):
+        verdict: str               # One of: Supported, Refuted, Uncertain, Needs Context
+        confidence: int            # Integer from 0–100
+        explanation: str           # 120–180 words explanation with citations
+        sources: List[str]         # List of source URLs or identifiers
+        techniques: List[str]      # Manipulative techniques detected
+        checklist: List[str]       # 3-step user action checklist
 
     for claim, evi in state['evidence'].items():
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are a fact-checking assistant."),
-            ("human", "Claim: {claim} Evidence: {evi} 1. Provide a clear verdict (True/False/Uncertain) 2. Confidence Score(0-100) and also 3. educate user on the underlying reasons a piece of content might be misleading."),
-        ])
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            config={
+                "system_instruction": system_prompt,
+                "response_mime_type": "application/json",
+                "response_schema": Result
+            },
+            contents=f"Claim: {claim} Evidence: {evi} 1. Provide a clear verdict 2. Confidence Score(0-100) 3. educate user on the underlying reasons a piece of content might be misleading. 4. Manipulative techniques (if any)"
+        )
 
-        # Bind the template with the LLM
-        chain = prompt | llm
+        result[claim] = response.parsed
 
-        # Provide the required variables to the prompt
-        response = chain.invoke({"claim": claim, "evi": evi})
-
-        text = response.content.strip()
-        text_lower = text.lower()
-
-        if text_lower.startswith("true"):
-            verdicts[claim] = "True"
-        elif text_lower.startswith("false"):
-            verdicts[claim] = "False"
-        else:
-            verdicts[claim] = "Uncertain"
-
-        explanations[claim] = text
-
-    return {**state, "verdicts": verdicts, "explanations": explanations}
+    return {
+        "result": result
+    }
 
 if __name__ == '__main__':
     response = tavily.invoke("paris is capital of india")
