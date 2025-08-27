@@ -2,12 +2,12 @@ from pydantic import BaseModel
 from google import genai
 from typing import List
 import requests
+import logging
 
 from app.agent.tools import tavily
 from app.agent.state import State
 from app.utils import read_prompt
 from app.core import get_settings
-from app.models import client
 
 settings = get_settings()
 client = genai.Client()
@@ -44,7 +44,9 @@ def evidence_retrieval(state: State):
             evidence[claim] = {"factcheck": fact_res}
         else:
             response = tavily.invoke(claim)
-            state["evidence"][claim] = {"factcheck":response}
+            evidence[claim] = {"factcheck":response}
+
+    logging.info(f"{evidence}\n\n\n")
 
     return {
         "evidence": evidence
@@ -81,7 +83,7 @@ def verdict_and_explainer(state: State):
             contents=f"Claim: {claim} Evidence: {evi} 1. Provide a clear verdict 2. Confidence Score(0-100) 3. educate user on the underlying reasons a piece of content might be misleading. 4. Manipulative techniques (if any)"
         )
 
-        result[claim] = response.parsed
+        result[claim] = response.parsed.dict()
 
     return {
         "result": result

@@ -25,8 +25,8 @@ app.add_middleware(
 
 # Include routers
 
-# from app.api import hackrx_router
-# app.include_router(hackrx_router, prefix='/api/v1' )
+from app.api import run_agent_router
+app.include_router(run_agent_router, prefix='/api' )
 
 @app.get("/", tags=["health"])
 async def root():
