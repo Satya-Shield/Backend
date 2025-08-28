@@ -5,6 +5,7 @@ class AgentRequest(BaseModel):
     query: str
 
 class AgentResponse(BaseModel):
+    claim: str
     verdict: str               # One of: Supported, Refuted, Uncertain, Needs Context
     confidence: int            # Integer from 0–100
     explanation: str           # 120–180 words explanation with citations
