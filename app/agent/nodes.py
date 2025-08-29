@@ -12,24 +12,6 @@ from app.models import client
 
 settings = get_settings()
 
-def extract_claims(state: State):
-    system_prompt = read_prompt("extract_claim_system_prompt")
-
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        config={
-            "system_instruction": system_prompt,
-            "response_mime_type": "application/json",
-            "response_schema": list[str]
-        },
-        contents=f"Extract all claims from this text:\n {state['input_text']}"
-    )
-
-    return {
-        "claims": response.parsed
-    }
-
-
 def evidence_retrieval(state: State):
     evidence = {}
 
