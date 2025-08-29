@@ -1,8 +1,10 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 class AgentRequest(BaseModel):
     query: str
+    image: Optional[str] = None
+
 
 class AgentResponse(BaseModel):
     claim: str

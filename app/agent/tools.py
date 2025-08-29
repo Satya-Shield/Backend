@@ -1,6 +1,6 @@
 from langchain_community.tools import ArxivQueryRun, WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper, ArxivAPIWrapper
-from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_tavily import TavilySearch
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,6 +13,6 @@ api_wikipedia_wrapper = WikipediaAPIWrapper(top_k_results=2, doc_content_chars_m
 wiki = WikipediaQueryRun(api_wrapper=api_wikipedia_wrapper)
 
 # Initialize Tavily
-tavily = TavilySearchResults(max_results=2)
+tavily = TavilySearch(max_results=2)
 
 tools = [arxiv, wiki, tavily]
