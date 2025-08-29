@@ -8,9 +8,9 @@ from app.agent.tools import tavily
 from app.agent.state import State
 from app.utils import read_prompt
 from app.core import get_settings
+from app.models import client
 
 settings = get_settings()
-client = genai.Client()
 
 def extract_claims(state: State):
     system_prompt = read_prompt("extract_claim_system_prompt")
@@ -51,14 +51,6 @@ def evidence_retrieval(state: State):
     return {
         "evidence": evidence
     }
-
-
-# def tools_check(state: State):
-#     for claim, evi in state.get("evidence",{}).items():
-#         if not evi.get("factcheck"):
-#             response = tavily.invoke(claim)
-#             state["evidence"][claim] = {"factcheck":response}
-
 
 def verdict_and_explainer(state: State):
     result = {}
