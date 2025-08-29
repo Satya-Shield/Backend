@@ -1,11 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from typing import List
 import logging
-from io import BytesIO
-from PIL import Image
-import requests
 
 from app.agent import misinformation_combating_agent
+from app.services  import extract_claims_from_text
 from app.api.models import (
     AgentRequest,
     AgentResponse
@@ -16,9 +14,9 @@ router = APIRouter()
 @router.post("/run_agent", response_model=List[AgentResponse])
 async def search_companies(request: AgentRequest) -> List[AgentResponse]:
     try:
+        claims = extract_claims_from_text(request.query)
         initial_state = {
-            "input_text": request.query,
-            "claims": [],
+            "claims": claims,
             "evidence": {},
             "result": {}
         }

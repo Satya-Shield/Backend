@@ -1,5 +1,6 @@
-from app.api.routes import run_agent_router
+from app.api.routes import *
 
 __all__ = [
-    run_agent_router
+    run_agent_router,
+    read_image_router
 ]
