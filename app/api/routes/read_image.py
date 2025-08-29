@@ -8,7 +8,8 @@ from fastapi import (
     HTTPException, 
     Depends, 
     UploadFile, 
-    File
+    File,
+    Form
 )
 
 from app.agent import misinformation_combating_agent
@@ -45,22 +46,26 @@ async def read_image_url(request: AgentRequest) -> List[AgentResponse]:
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/read_image_file", response_model=List[AgentResponse])
-async def read_image_file(request: AgentRequest, file: UploadFile = File(...)):
+async def read_image_file(
+    query: str = Form(...),
+    file: UploadFile = File(...)
+):
     try:
         image_data = await file.read()
         image = Image.open(BytesIO(image_data))
 
-        claims = extract_claims_from_image(image, request.query)
+        claims = extract_claims_from_image(image, query)
         initial_state = {
             "claims": claims,
             "evidence": {},
             "result": {}
         }
 
-        res = misinformation_combating_agent.invoke(initial_state)
+        res = await misinformation_combating_agent.ainvoke(initial_state)
         agent_response = [{"claim": key, **val} for key, val in res['result'].items()]
 
         return agent_response
     except Exception as e:
         logging.error(f"Error in image_to_text: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+

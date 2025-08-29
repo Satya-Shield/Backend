@@ -3,6 +3,7 @@ from google import genai
 from typing import List
 import requests
 import logging
+import asyncio
 
 from app.agent.tools import tavily
 from app.agent.state import State
@@ -12,10 +13,10 @@ from app.models import client
 
 settings = get_settings()
 
-def evidence_retrieval(state: State):
+async def evidence_retrieval(state: State):
     evidence = {}
 
-    for claim in state["claims"]:
+    async def get_evidence(claim):
         fact_url = (
             f"https://factchecktools.googleapis.com/v1alpha1/claims:search"
             f"?query={claim}&key={settings.factcheck_api_key}"
@@ -28,13 +29,15 @@ def evidence_retrieval(state: State):
             response = tavily.invoke(claim)
             evidence[claim] = {"factcheck":response}
 
+    await asyncio.gather(*[get_evidence(claim) for claim in state['claims']])
+
     logging.info(f"{evidence}\n\n\n")
 
     return {
         "evidence": evidence
     }
 
-def verdict_and_explainer(state: State):
+async def verdict_and_explainer(state: State):
     result = {}
     system_prompt = read_prompt("explainer_system_prompt")
 
@@ -46,7 +49,7 @@ def verdict_and_explainer(state: State):
         techniques: List[str]      # Manipulative techniques detected
         checklist: List[str]       # 3-step user action checklist
 
-    for claim, evi in state['evidence'].items():
+    async def get_verdict(claim, evi):
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             config={
@@ -58,6 +61,9 @@ def verdict_and_explainer(state: State):
         )
 
         result[claim] = response.parsed.dict()
+    
+    
+    await asyncio.gather(*[get_verdict(claim, evi) for claim, evi in state['evidence'].items()])
 
     return {
         "result": result

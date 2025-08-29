@@ -1,9 +1,16 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
+from fastapi import (
+    UploadFile, 
+    File
+)
+
+
 class AgentRequest(BaseModel):
     query: str
     image: Optional[str] = None
+    file: Optional[UploadFile] = File(...)
 
 
 class AgentResponse(BaseModel):
