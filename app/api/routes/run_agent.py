@@ -21,7 +21,7 @@ async def search_companies(request: AgentRequest) -> List[AgentResponse]:
             "result": {}
         }
 
-        res = misinformation_combating_agent.invoke(initial_state)
+        res = await misinformation_combating_agent.ainvoke(initial_state)
         response = [{"claim": key, **val} for key, val in res['result'].items()]
         return response
     except Exception as e:

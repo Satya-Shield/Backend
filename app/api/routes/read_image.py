@@ -37,7 +37,7 @@ async def read_image_url(request: AgentRequest) -> List[AgentResponse]:
             "result": {}
         }
 
-        res = misinformation_combating_agent.invoke(initial_state)
+        res = await misinformation_combating_agent.ainvoke(initial_state)
         agent_response = [{"claim": key, **val} for key, val in res['result'].items()]
 
         return agent_response
