@@ -16,3 +16,4 @@ wiki = WikipediaQueryRun(api_wrapper=api_wikipedia_wrapper)
 tavily = TavilySearch(max_results=2)
 
 tools = [arxiv, wiki, tavily]
+
