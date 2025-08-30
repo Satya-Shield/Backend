@@ -6,7 +6,7 @@ def extract_claims_from_text(text: str) -> list[str]:
     system_prompt = read_prompt("extract_claim_system_prompt")
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-2.5-pro",
         config={
             "system_instruction": system_prompt,
             "response_mime_type": "application/json",
@@ -25,7 +25,7 @@ def extract_claims_from_image(image, query: str) -> list[str]:
     system_prompt = read_prompt("extract_claim_system_prompt")
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-2.5-pro",
         config={
             "system_instruction": system_prompt,
             "response_mime_type": "application/json",
