@@ -33,7 +33,7 @@ def extract_claims_from_image(image, query: str) -> list[str]:
         },
         contents=[
             image, 
-            f"Extract all readable text from this image. This query was provided along with the image: {query}"
+            f"Extract all claims from this image. This query was provided along with the image: {query}"
         ]
     )
 
