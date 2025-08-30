@@ -51,7 +51,7 @@ async def verdict_and_explainer(state: State):
 
     async def get_verdict(claim, evi):
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-2.5-pro",
             config={
                 "system_instruction": system_prompt,
                 "response_mime_type": "application/json",
