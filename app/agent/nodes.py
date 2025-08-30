@@ -1,19 +1,19 @@
 from pydantic import BaseModel
-from google import genai
 from typing import List
 import requests
-import logging
 import asyncio
 
+from app.core import get_settings, logger
 from app.agent.tools import tavily
 from app.agent.state import State
 from app.utils import read_prompt
-from app.core import get_settings
 from app.models import client
 
 settings = get_settings()
 
 async def evidence_retrieval(state: State):
+    logger.info("Getting evidences...")
+
     evidence = {}
 
     async def get_evidence(claim):
@@ -31,13 +31,13 @@ async def evidence_retrieval(state: State):
 
     await asyncio.gather(*[get_evidence(claim) for claim in state['claims']])
 
-    logging.info(f"{evidence}\n\n\n")
-
     return {
         "evidence": evidence
     }
 
 async def verdict_and_explainer(state: State):
+    logger.info("Reasoning final verdict...")
+
     result = {}
     system_prompt = read_prompt("explainer_system_prompt")
 
@@ -68,7 +68,3 @@ async def verdict_and_explainer(state: State):
     return {
         "result": result
     }
-
-if __name__ == '__main__':
-    response = tavily.invoke("paris is capital of india")
-    print(response)

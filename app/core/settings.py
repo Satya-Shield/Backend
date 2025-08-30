@@ -24,10 +24,14 @@ def get_settings() -> Settings:
     return Settings()
 
 logging.basicConfig(
-    level=logging.INFO if not get_settings().debug else logging.DEBUG,
+    # level=logging.INFO if not get_settings().debug else logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.FileHandler("app.log"),
         logging.StreamHandler()
     ]
 )
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO if not get_settings().debug else logging.DEBUG)
+

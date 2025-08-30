@@ -1,4 +1,4 @@
-import logging
+from app.core import logger
 
 def read_prompt(prompt_name: str) -> str:
     try:
@@ -6,7 +6,7 @@ def read_prompt(prompt_name: str) -> str:
         with open(path) as file:
             return file.read()
     except Exception as e:
-        logging.error(f"Error while reading prompt: {e}")
+        logger.error(f"Error while reading prompt: {e}")
 
 if __name__ == "__main__":
     prompt = read_prompt("test")

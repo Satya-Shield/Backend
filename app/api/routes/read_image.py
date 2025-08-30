@@ -2,7 +2,7 @@ from typing import List
 from io import BytesIO
 from PIL import Image
 import requests
-import logging
+import time
 from fastapi import (
     APIRouter, 
     HTTPException, 
@@ -14,6 +14,7 @@ from fastapi import (
 
 from app.agent import misinformation_combating_agent
 from app.services import extract_claims_from_image
+from app.core import logger
 from app.api.models import (
     AgentRequest,
     AgentResponse
@@ -24,6 +25,9 @@ router = APIRouter()
 @router.post("/read_image_url", response_model=List[AgentResponse])
 async def read_image_url(request: AgentRequest) -> List[AgentResponse]:
     try:
+        start_time = time.monotonic()
+        logger.info(f"\n User Query: {request.query} \n URL: {request.image}  \n\n")
+
         resp = requests.get(request.image)
         if resp.status_code != 200:
             raise HTTPException(status_code=400, detail="Failed to download image")
@@ -38,12 +42,17 @@ async def read_image_url(request: AgentRequest) -> List[AgentResponse]:
         }
 
         res = await misinformation_combating_agent.ainvoke(initial_state)
-        agent_response = [{"claim": key, **val} for key, val in res['result'].items()]
+        response = [{"claim": key, **val} for key, val in res['result'].items()]
 
-        return agent_response
+        logger.info(f"\n\n Response: {response}\n\n")
+        return response
     except Exception as e:
-        logging.error(f"Error in image_to_text: {e}")
+        logger.error(f"Error in read_image_url: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+    finally:
+        end_time = time.monotonic()
+        duration = end_time - start_time
+        logger.info(f"Total response time: {duration:.2f} seconds")
 
 @router.post("/read_image_file", response_model=List[AgentResponse])
 async def read_image_file(
@@ -51,6 +60,9 @@ async def read_image_file(
     file: UploadFile = File(...)
 ):
     try:
+        start_time = time.monotonic()
+        logger.info(f"\n User Query: {query}\n\n")
+
         image_data = await file.read()
         image = Image.open(BytesIO(image_data))
 
@@ -62,10 +74,15 @@ async def read_image_file(
         }
 
         res = await misinformation_combating_agent.ainvoke(initial_state)
-        agent_response = [{"claim": key, **val} for key, val in res['result'].items()]
+        response = [{"claim": key, **val} for key, val in res['result'].items()]
 
-        return agent_response
+        logger.info(f"\n\n Response: {response}\n\n")
+        return response
     except Exception as e:
-        logging.error(f"Error in image_to_text: {e}")
+        logger.error(f"Error in read_image_file: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+    finally:
+        end_time = time.monotonic()
+        duration = end_time - start_time
+        logger.info(f"Total response time: {duration:.2f} seconds")
 

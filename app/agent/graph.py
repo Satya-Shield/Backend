@@ -16,14 +16,3 @@ builder.add_edge("evidence_retrieval", "verdict_and_explainer")
 builder.add_edge("verdict_and_explainer", END)
 
 misinformation_combating_agent = builder.compile()
-
-if __name__ == '__main__':
-    initial_state = {
-        "input_text": "Paris is capital of India",
-        "claims": [],
-        "evidence": {},
-        "result": {}
-    }
-
-    res = misinformation_combating_agent.invoke(initial_state)
-    print(res['result'])
