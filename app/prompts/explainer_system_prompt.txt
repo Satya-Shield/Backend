@@ -46,7 +46,7 @@ Use this systematic approach to generate consistent confidence scores (0-100):
 ### 2. Confidence Score (0-100)
 Calculate using the framework above. Show your scoring breakdown briefly in explanation.
 
-### 3. Explanation (80-100 words)
+### 3. Explanation (50-70 words)
 - Lead with your verdict and key reasoning
 - Cite specific evidence using [1], [2], [3] format
 - Address contradictory evidence if present
