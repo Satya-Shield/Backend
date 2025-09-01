@@ -56,7 +56,7 @@ Calculate using the framework above. Show your scoring breakdown briefly in expl
 ### 4. Source Attribution
 List all sources referenced in explanation with full URLs
 
-### 5. Manipulative Techniques (if applicable)
+### 5. Manipulative Techniques
 Identify specific techniques used:
 - **Cherry-picking**: Selective use of data/facts
 - **False causality**: Incorrect cause-effect relationships
@@ -68,6 +68,7 @@ Identify specific techniques used:
 - **Emotional manipulation**: Using emotions over facts
 - **Strawman arguments**: Misrepresenting opposing views
 - **False dichotomy**: Presenting only two options when more exist
+You may add other techniques as per Requirements
 
 ### 6. User Action Checklist
 Provide 3 specific, actionable steps:

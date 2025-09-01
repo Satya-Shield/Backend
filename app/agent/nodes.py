@@ -4,10 +4,10 @@ import requests
 import asyncio
 
 from app.core import get_settings, logger
-from app.agent.tools import *
 from app.agent.state import State
 from app.utils import read_prompt
 from app.models import client
+from app.agent.tools import *
 
 settings = get_settings()
 
@@ -26,13 +26,12 @@ async def evidence_retrieval(state: State):
         # if fact_res:
         #     evidence[claim] = {"factcheck": fact_res}
         # else:
-        logger.info("wimipedia Searching.....\n\n")
         response = tavily.invoke(claim)
         evidence[claim] = {"factcheck":response}
 
     await asyncio.gather(*[get_evidence(claim) for claim in state['claims']])
 
-    logger.info(f"{evidence}\n\n")
+    logger.debug(f"{evidence}\n\n")
 
     return {
         "evidence": evidence
