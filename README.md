@@ -1,7 +1,7 @@
 # 🛡️ SatyaShield Backend
 
 <div align="center">
-  **AI-Powered Misinformation Detection Engine**
+  <strong> </b>AI-Powered Misinformation Detection Engine </strong>
   
   *Empowering digital literacy through intelligent fact-checking*
 
@@ -316,3 +316,4 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ---
 
 *"Truth is not determined by majority vote." - Doug Gwyn*
+
