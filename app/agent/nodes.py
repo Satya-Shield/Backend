@@ -67,7 +67,7 @@ async def verdict_and_explainer(state: State):
     
     
     for claim, evi in state['evidence'].items():
-        get_verdict(claim, evi) 
+        await get_verdict(claim, evi) 
 
     return {
         "result": result
