@@ -66,7 +66,8 @@ async def verdict_and_explainer(state: State):
         result[claim] = response.parsed.dict()
     
     
-    await asyncio.gather(*[get_verdict(claim, evi) for claim, evi in state['evidence'].items()])
+    for claim, evi in state['evidence'].items():
+        get_verdict(claim, evi) 
 
     return {
         "result": result
