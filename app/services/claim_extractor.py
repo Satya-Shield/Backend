@@ -1,6 +1,7 @@
 from app.utils import read_prompt
 from app.models import client
 from app.core import logger
+from google.genai import types
 
 def extract_claims_from_text(text: str) -> list[str]:
     system_prompt = read_prompt("extract_claim_system_prompt")
@@ -56,6 +57,35 @@ def extract_claims_from_video(video, query: str) -> list[str]:
             video, 
             f"Extract all claims from this video. This query was provided along with the video: {query}"
         ]
+    )
+
+    claims = response.parsed
+    logger.info(f"Extracted {len(claims)} claims")
+
+    return claims
+
+def extract_claims_from_video_url(video_url: str, query: str) -> list[str]:
+    system_prompt = read_prompt("extract_claim_system_prompt")
+
+    response = client.models.generate_content(
+        model="gemini-2.5-pro",
+        config={
+            "system_instruction": system_prompt,
+            "response_mime_type": "application/json",
+            "response_schema": list[str]
+        },
+        contents=types.Content(
+            parts=[
+                types.Part(
+                    file_data=types.FileData(file_uri=video_url)
+                ),
+                types.Part(text=f"Extract all claims from this video. This query was provided along with the video: {query}")
+            ]
+        )
+        # contents=[
+        #     video_url, 
+        #     f"Extract all claims from this video. This query was provided along with the video: {query}"
+        # ]
     )
 
     claims = response.parsed

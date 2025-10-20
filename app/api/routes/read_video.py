@@ -11,82 +11,42 @@ from app.api.models import (
     AgentResponse
 )
 import tempfile
-from pathlib import Path
 from app.agent import misinformation_combating_agent
 from app.core.settings import get_settings
 import time
-import asyncio
 import os
-import tempfile
-import httpx
-import mimetypes
 from app.core import logger
 from google import genai
-
-from app.services.claim_extractor import extract_claims_from_video
+from app.services.claim_extractor import (extract_claims_from_video_url, extract_claims_from_video)
 
 router = APIRouter()
 
-# @router.post("/read_video_url", response_model=List[AgentResponse])
-# async def read_video_url(request: AgentRequest) -> List[AgentResponse]:
-    # temp_file_path = None
-    # try:
-    #     start_time = time.monotonic()
-    #     logger.info(f"\n User Query: {request.query} \n URL: {request.video}  \n\n")
-    #     settings = get_settings()
-    #
-    #     genai.configure(api_key=settings.gemini_api_key)
+@router.post("/read_video_url", response_model=List[AgentResponse])
+async def read_video_url(request: AgentRequest) -> List[AgentResponse]:
+    try:
+        start_time = time.monotonic()
+        logger.info(f"\n User Query: {request.query} \n URL: {request.video}  \n\n")
+        settings = get_settings()
+        claims = extract_claims_from_video_url(request.video, request.query)
 
-    #     async with httpx.AsyncClient() as client:
-    #         response = await client.get(request.video)
-    #         response.raise_for_status()  # Raise an exception for bad status codes
-    #         video_content = response.content
+        initial_state = {
+            "claims": claims,
+            "evidence": {},
+            "result": {}
+        }
 
-    #     # Guess mime type from URL
-    #     mime_type, _ = mimetypes.guess_type(request.video)
+        res = await misinformation_combating_agent.ainvoke(initial_state)
+        response = [{"claim": key, **val} for key, val in res['result'].items()]
 
-    #     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_file:
-    #         temp_file.write(video_content)
-    #         temp_file_path = temp_file.name
-
-    #     video = genai.upload_file(
-    #         path=temp_file_path,
-    #         display_name=request.video,
-    #         mime_type=mime_type
-    #     )
-
-    #     # Wait for the file to be processed
-    #     while video.state.name == "PROCESSING":
-    #         await asyncio.sleep(10)
-    #         video = genai.get_file(video.name)
-
-    #     if video.state.name == "FAILED":
-    #         raise HTTPException(status_code=500, detail="Video processing failed.")
-
-    #     claims = extract_claims_from_video(video, request.query)
-    #     initial_state = {
-    #         "claims": claims,
-    #         "evidence": {},
-    #         "result": {}
-    #     }
-
-    #     res = await misinformation_combating_agent.ainvoke(initial_state)
-    #     response = [{"claim": key, **val} for key, val in res['result'].items()]
-
-    #     logger.info(f"\n\n Response: {response}\n\n")
-    #     return response
-    # except httpx.HTTPStatusError as e:
-    #     logger.error(f"Error downloading video: {e}")
-    #     raise HTTPException(status_code=400, detail=f"Could not download video from URL: {request.video}")
-    # except Exception as e:
-    #     logger.error(f"Error in read_video_url: {e}")
-    #     raise HTTPException(status_code=500, detail="Internal server error")
-    # finally:
-    #     if temp_file_path and os.path.exists(temp_file_path):
-    #         os.remove(temp_file_path)
-    #     end_time = time.monotonic()
-    #     duration = end_time - start_time
-    #     logger.info(f"Total response time: {duration:.2f} seconds")
+        logger.info(f"\n\n Response: {response}\n\n")
+        return response
+    except Exception as e:
+        logger.error(f"Error in read_video_url: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+    finally:
+        end_time = time.monotonic()
+        duration = end_time - start_time
+        logger.info(f"Total response time: {duration:.2f} seconds")    
 
 
 @router.post("/read_video_file", response_model=List[AgentResponse])
