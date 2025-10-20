@@ -4,6 +4,7 @@ from typing import List, Optional
 class AgentRequest(BaseModel):
     query: str
     image: Optional[str] = None
+    video: Optional[str] = None
 
 
 class AgentResponse(BaseModel):
