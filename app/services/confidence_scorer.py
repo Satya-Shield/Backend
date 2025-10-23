@@ -1,17 +1,15 @@
-import os
-
-import joblib
-import numpy as np
-import pandas as pd
-import spacy
 from sentence_transformers import SentenceTransformer, util
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import pipeline
+import pandas as pd
+import numpy as np
+import spacy
+import joblib
+import os
 
 nlp = spacy.load("en_core_web_sm")
 nli_model = pipeline("text-classification", model="roberta-large-mnli")
 embed_model = SentenceTransformer("all-MiniLM-L6-v2")
-
 
 class ConfidenceScoring:
     def __init__(
@@ -48,10 +46,13 @@ class ConfidenceScoring:
     def _compute_consistency_score(self, news_text, reasoning_summary=None):
         doc = nlp(news_text)
         sentences = [sent.text for sent in doc.sents]
+
         if reasoning_summary:
             sentences.append(reasoning_summary)
+
         if len(sentences) < 2:
             return 1.0
+        
         embeds = embed_model.encode(sentences)
         sim_matrix = cosine_similarity(embeds)
         consistency = (np.sum(sim_matrix) - len(embeds)) / (
@@ -66,21 +67,26 @@ class ConfidenceScoring:
     def _compute_reasoning_specificity(self, news_text):
         doc = nlp(news_text)
         sentences = list(doc.sents)
+
         if len(sentences) == 0:
             return 0.0
+        
         specific_count = sum(
             1
             for sent in sentences
             if any(tok.ent_type_ or tok.like_num for tok in sent)
         )
+
         return specific_count / len(sentences)
 
     def _compute_semantic_uncertainty(self, news_text):
         doc = nlp(news_text)
         sentences = list(doc.sents)
         lengths = [len(sent) for sent in sentences]
+
         if len(lengths) == 0:
             return 0.0
+        
         return np.std(lengths) / (np.mean(lengths) + 1e-6)
 
     def _compute_source_overlap_score(self, sources):
@@ -153,12 +159,12 @@ class ConfidenceScoring:
         source_overlap_score = 0 if not source_overlap_score else source_overlap_score
         weights = np.array(confidence_weight)
         weights = weights / weights.sum()
+        
         return (
             confidence_weight[0] * llm_confidence
             + confidence_weight[1] * llm_predicted_confidence
             + confidence_weight[2] * source_overlap_score
         )
-
 
 if __name__ == "__main__":
     from pprint import pprint

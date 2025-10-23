@@ -10,14 +10,18 @@ from app.api.models import (
     AgentRequest,
     AgentResponse
 )
-import tempfile
 from app.agent import misinformation_combating_agent
-from app.core.settings import get_settings
+import tempfile
 import time
 import os
+
+from app.core.settings import get_settings
 from app.core import logger
 from google import genai
-from app.services.claim_extractor import (extract_claims_from_video_url, extract_claims_from_video)
+from app.services.claim_extractor import (
+    extract_claims_from_video_url, 
+    extract_claims_from_video
+)
 
 router = APIRouter()
 
@@ -26,7 +30,6 @@ async def read_video_url(request: AgentRequest) -> List[AgentResponse]:
     try:
         start_time = time.monotonic()
         logger.info(f"\n User Query: {request.query} \n URL: {request.video}  \n\n")
-        settings = get_settings()
         claims = extract_claims_from_video_url(request.video, request.query)
 
         initial_state = {
@@ -47,7 +50,6 @@ async def read_video_url(request: AgentRequest) -> List[AgentResponse]:
         end_time = time.monotonic()
         duration = end_time - start_time
         logger.info(f"Total response time: {duration:.2f} seconds")    
-
 
 @router.post("/read_video_file", response_model=List[AgentResponse])
 async def read_video_file(
@@ -91,7 +93,6 @@ async def read_video_file(
 
         logger.info(f"\n\n Response: {response}\n\n")
         return response
-
     except Exception as e:
         logger.error(f"Error in read_video_file: {e}")
         raise HTTPException(status_code=500, detail=str(e))
