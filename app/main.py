@@ -27,12 +27,14 @@ app.add_middleware(
 from app.api import (
     run_agent_router,
     read_image_router,
-    read_video_router
+    read_video_router,
+    deepfake_check_router
 )
 
 app.include_router(run_agent_router, prefix='/api' )
 app.include_router(read_image_router, prefix='/api' )
 app.include_router(read_video_router, prefix='/api' )
+app.include_router(deepfake_check_router, prefix='/api' )
 
 @app.get("/", tags=["health"])
 async def root():

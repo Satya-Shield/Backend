@@ -1,7 +1,7 @@
 from app.utils import read_prompt
+from google.genai import types
 from app.models import client
 from app.core import logger
-from google.genai import types
 
 def extract_claims_from_text(text: str) -> list[str]:
     system_prompt = read_prompt("extract_claim_system_prompt")
@@ -13,8 +13,7 @@ def extract_claims_from_text(text: str) -> list[str]:
             "response_mime_type": "application/json",
             "response_schema": list[str]
         },
-        contents=f"Extract all claims from this text:\n {text}",
-        
+        contents=f"Extract all claims from this text:\n {text}",      
     )
 
     claims = response.parsed
