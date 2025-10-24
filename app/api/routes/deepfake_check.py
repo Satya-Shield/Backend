@@ -35,8 +35,8 @@ async def read_deepfake(
         web_detection = response.web_detection
 
         if web_detection.pages_with_matching_images:
-            weights = np.array([-1.336671, -2.838989, -9.950414, -0.397244, -0.018669])
-            intercept = 8.09  # bias term
+            weights = np.array([4.854692, -1.400546, 0.531892, -2.534283])
+            intercept = -1.89660461  # bias term
 
             def get_fake_probability(model_output):
                 labels = {item['label'].lower(): item['score'] for item in model_output}
@@ -55,7 +55,6 @@ async def read_deepfake(
                 "OpenDeepfake": "prithivMLmods/open-deepfake-detection",
                 "GlassFine": "CodyNeo/glass_fine_tuned_deepfake_detection",
                 "Dima806": "dima806/deepfake_vs_real_image_detection",
-                "DeepFakeV2": "prithivMLmods/Deep-Fake-Detector-v2-Model"
             }
             # path = r"D:\project\New folder\deepfake\WhatsApp Image 2025-10-23 at 00.26.33_8bc6fcdc.jpg"
 
@@ -74,7 +73,7 @@ async def read_deepfake(
 
             print(f"Fake Prob: {fake_prob}")
 
-            final_label = "FAKE" if fake_prob > 0.5 else "REAL"
+            final_label = "FAKE" if fake_prob > 0.55 else "REAL"
             return final_label            
         else:
             return "FAKE"
