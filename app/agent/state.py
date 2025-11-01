@@ -7,3 +7,5 @@ class State(TypedDict):
     claim_verdicts: Dict[str, Any]
     confidence_scores: Dict[str, Any]
     result: Dict[str, Any]
+    overall: Dict[str, Any]
+    

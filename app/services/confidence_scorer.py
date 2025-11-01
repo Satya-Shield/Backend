@@ -183,7 +183,7 @@ if __name__ == "__main__":
     sources = [
         "Source A: Government press release on pollution control.",
         "Source B: News report summarizing the new policy.",
-    ]
+    ] 
 
     llm_confidence = 0.85
 

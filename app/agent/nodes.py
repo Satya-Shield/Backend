@@ -120,3 +120,24 @@ async def confidence_scorer(state: State):
     return {
         "confience_scores": result
     }
+
+async def final_verdict(state: State):
+    class Result(BaseModel):
+        verdict: bool
+        summary: str
+
+    async def get_score(claim, evi):
+        response = client.models.generate_content(
+            model="gemini-2.5-pro",
+            config={
+                "response_mime_type": "application/json",
+                "response_schema": Result
+            },
+            contents=f"These are the claims: {state['claims']}. Combine all the claims and give me a final overall verdict and summary of 50-80 words of all the claims combined."
+        )
+
+        res = response.parsed.model_dump()
+        
+        return {
+            "overall": res
+        }

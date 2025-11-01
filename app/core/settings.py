@@ -8,10 +8,11 @@ load_dotenv(override=True)
 
 class Settings(BaseSettings):
     """Application settings."""
-    app_name: str = "Gen AI Exchange"
+    app_name: str = "SatyaShield"
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
     factcheck_api_key: str = os.environ.get("GOOGLE_FACT_CHECK_API_KEY", "")
     tawily_api_key: str = os.getenv("TAWILY_API_KEY", "")
+    cloud_vision_credentials: str = os.getenv("CLOUD_VISION_CREDENTIALS_PATH", "")
     debug: bool = bool(os.getenv("DEBUG", False))
 
 @lru_cache()
