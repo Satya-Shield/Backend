@@ -76,9 +76,6 @@ Provide 3 specific, actionable steps:
 - Cross-reference suggestions
 - Red flags to watch for
 
-### 7. **Keywords from the Claim**
-List 3–7 essential keywords or key phrases extracted from the claim that represent its core topic or focus.
-
 
 ## Quality Standards
 - **Consistency**: Apply scoring framework uniformly across all claims
