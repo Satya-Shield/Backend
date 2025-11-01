@@ -1,8 +1,10 @@
 from pydantic import BaseModel
+from datetime import datetime
 from typing import List
-import requests
 import asyncio
+import os
 
+from app.services import ConfidenceScoring
 from app.core import get_settings, logger
 from app.agent.state import State
 from app.utils import read_prompt
@@ -45,13 +47,11 @@ async def verdict_and_explainer(state: State):
 
     class Result(BaseModel):
         verdict: str               # One of: Supported, Refuted, Uncertain, Needs Context
-        confidence: int            # Integer from 0–100
         explanation: str           # 120–180 words explanation with citations
         sources: List[str]         # List of source URLs or identifiers
         techniques: List[str]      # Manipulative techniques detected
         checklist: List[str]       # 3-step user action checklist
 
-    from datetime import datetime
     async def get_verdict(claim, evi):
         response = client.models.generate_content(
             model="gemini-2.5-pro",
@@ -65,10 +65,58 @@ async def verdict_and_explainer(state: State):
 
         result[claim] = response.parsed.dict()
     
-    
-    for claim, evi in state['evidence'].items():
-        await get_verdict(claim, evi) 
+    await asyncio.gather(*[get_verdict(claim) for claim in state['claims']])
+
+    # for claim, evi in state['evidence'].items():
+    #     await get_verdict(claim, evi) 
 
     return {
-        "result": result
+        "claim_verdicts": result
+    }
+
+async def confidence_scorer(state: State): 
+    logger.info("Calculating the confidence for the veridcts...")
+
+    result = {}
+    system_prompt = read_prompt("confidence_scoring_features_prompt")
+
+    class Result(BaseModel):
+        keywords: List[str]
+        reasoning_summary: str
+        sources: str
+        confidence: int
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    MODEL_PATH = os.path.join(BASE_DIR, "models", "confidence_model_lgbm.joblib")
+
+    scorer = ConfidenceScoring(MODEL_OUT=MODEL_PATH)
+
+    async def get_score(claim, evi):
+        response = client.models.generate_content(
+            model="gemini-2.5-pro",
+            config={
+                "system_instruction": system_prompt,
+                "response_mime_type": "application/json",
+                "response_schema": Result
+            },
+            contents=f"Claim: {claim} Evidence: {evi} Todays date is {datetime.now()}"
+        )
+
+        res = response.parsed.model_dump()
+
+        result[claim] = scorer.predict(
+            news_text=claim,
+            keywords=res['keywords'],
+            reasoning_summary=res['reasoning_summary'],
+            sources=res['sources'],
+            llm_confidence=res['confidence'],
+        )
+    
+    await asyncio.gather(*[get_score(claim) for claim in state['claims']])
+
+    # for claim, evi in state['evidence'].items():
+    #     await get_score(claim, evi) 
+
+    return {
+        "confience_scores": result
     }
