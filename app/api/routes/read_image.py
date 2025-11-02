@@ -22,8 +22,8 @@ from app.api.models import (
 
 router = APIRouter()
 
-@router.post("/read_image_url", response_model=List[AgentResponse])
-async def read_image_url(request: AgentRequest) -> List[AgentResponse]:
+@router.post("/read_image_url")
+async def read_image_url(request: AgentRequest):
     try:
         start_time = time.monotonic()
         logger.info(f"\n User Query: {request.query} \n URL: {request.image}  \n\n")
@@ -42,10 +42,20 @@ async def read_image_url(request: AgentRequest) -> List[AgentResponse]:
         }
 
         res = await misinformation_combating_agent.ainvoke(initial_state)
-        response = [{"claim": key, **val} for key, val in res['result'].items()]
+        response = [{"claim": key, **val} for key, val in res['claim_verdicts'].items()]
+        
+        claims = []
+        for r in response:
+            r['confidence_score'] = res['confidence_scores'][r['claim']]
+            claims.append(r)
+        
+        final_res = {
+            **res["overall"],
+            "claims": claims
+        }
 
-        logger.info(f"\n\n Response: {response}\n\n")
-        return response
+        logger.info(f"\n\n Response: {final_res}\n\n")
+        return final_res
     except Exception as e:
         logger.error(f"Error in read_image_url: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
@@ -54,7 +64,7 @@ async def read_image_url(request: AgentRequest) -> List[AgentResponse]:
         duration = end_time - start_time
         logger.info(f"Total response time: {duration:.2f} seconds")
 
-@router.post("/read_image_file", response_model=List[AgentResponse])
+@router.post("/read_image_file")
 async def read_image_file(
     query: str = Form(...),
     file: UploadFile = File(...)
@@ -74,10 +84,20 @@ async def read_image_file(
         }
 
         res = await misinformation_combating_agent.ainvoke(initial_state)
-        response = [{"claim": key, **val} for key, val in res['result'].items()]
+        response = [{"claim": key, **val} for key, val in res['claim_verdicts'].items()]
+        
+        claims = []
+        for r in response:
+            r['confidence_score'] = res['confidence_scores'][r['claim']]
+            claims.append(r)
+        
+        final_res = {
+            **res["overall"],
+            "claims": claims
+        }
 
-        logger.info(f"\n\n Response: {response}\n\n")
-        return response
+        logger.info(f"\n\n Response: {final_res}\n\n")
+        return final_res
     except Exception as e:
         logger.error(f"Error in read_image_file: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")

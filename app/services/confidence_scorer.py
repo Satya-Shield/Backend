@@ -4,6 +4,7 @@ from transformers import pipeline
 import pandas as pd
 import numpy as np
 import spacy
+from app.core import logger
 import joblib
 import os
 
@@ -147,19 +148,25 @@ class ConfidenceScoring:
         llm_confidence=0,
         confidence_weight=[0.25, 0.7, 0.05],
     ):
+        logger.debug(f"In Confidence Scorer: {sources}")
         features = self.compute_all_features(
             news_text,
             keywords,
             reasoning_summary,
             sources,
         )
+        logger.debug("Features found")
         raw_preds = self.model["model"].predict(pd.DataFrame([features]))
+        logger.debug("Predicted")
         llm_predicted_confidence = self.model["isotonic"].predict(raw_preds)
+        logger.debug("Isotonic Predicted")
         source_overlap_score = features.get("source_overlap_score")
         source_overlap_score = 0 if not source_overlap_score else source_overlap_score
         weights = np.array(confidence_weight)
         weights = weights / weights.sum()
         
+        logger.info("Final Predicted")
+        logger.info(llm_predicted_confidence)
         return (
             confidence_weight[0] * llm_confidence
             + confidence_weight[1] * llm_predicted_confidence

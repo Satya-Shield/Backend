@@ -15,7 +15,8 @@ load_dotenv(override=True)
 required_vars = [
     "GEMINI_API_KEY",
     "TAVILY_API_KEY",
-    "GOOGLE_FACT_CHECK_API_KEY"
+    "CLOUD_VISION_CREDENTIALS_PATH",
+    "CUSTOM_SEARCH_ENGINE_ID"
 ]
 
 missing_vars = [var for var in required_vars if not os.getenv(var)]

@@ -6,10 +6,10 @@ import os
 
 from app.services import ConfidenceScoring
 from app.core import get_settings, logger
-from app.agent.state import State
+from app.agent.main_agent.state import State
 from app.utils import read_prompt
 from app.models import client
-from app.agent.tools import *
+from app.agent.main_agent.tools import *
 
 settings = get_settings()
 
@@ -40,7 +40,7 @@ async def evidence_retrieval(state: State):
     }
 
 async def verdict_and_explainer(state: State):
-    logger.info("Reasoning final verdict...")
+    logger.info("Reasoning verdict for each claim...")
 
     result = {}
     system_prompt = read_prompt("explainer_system_prompt")
@@ -65,7 +65,8 @@ async def verdict_and_explainer(state: State):
 
         result[claim] = response.parsed.dict()
     
-    await asyncio.gather(*[get_verdict(claim) for claim in state['claims']])
+    await asyncio.gather(*[get_verdict(claim, state['evidence'][claim]) for claim in state['claims']])
+    logger.info("Verdict found")
 
     # for claim, evi in state['evidence'].items():
     #     await get_verdict(claim, evi) 
@@ -83,11 +84,11 @@ async def confidence_scorer(state: State):
     class Result(BaseModel):
         keywords: List[str]
         reasoning_summary: str
-        sources: str
+        sources: List[str]
         confidence: int
 
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    MODEL_PATH = os.path.join(BASE_DIR, "models", "confidence_model_lgbm.joblib")
+    MODEL_PATH = os.path.join("app", "models", "confidence_model_lgbm.joblib")
 
     scorer = ConfidenceScoring(MODEL_OUT=MODEL_PATH)
 
@@ -110,34 +111,41 @@ async def confidence_scorer(state: State):
             reasoning_summary=res['reasoning_summary'],
             sources=res['sources'],
             llm_confidence=res['confidence'],
-        )
+        )[0]
+
+        logger.info(result[claim])
     
-    await asyncio.gather(*[get_score(claim) for claim in state['claims']])
+    await asyncio.gather(*[get_score(claim, state['evidence'][claim]) for claim in state['claims']])
 
     # for claim, evi in state['evidence'].items():
     #     await get_score(claim, evi) 
 
+    logger.info("Confidence Found")
+
     return {
-        "confience_scores": result
+        "confidence_scores": result
     }
 
 async def final_verdict(state: State):
+    logger.info("Reasoning the final verdict...")
+
     class Result(BaseModel):
         verdict: bool
         summary: str
 
-    async def get_score(claim, evi):
-        response = client.models.generate_content(
-            model="gemini-2.5-pro",
-            config={
-                "response_mime_type": "application/json",
-                "response_schema": Result
-            },
-            contents=f"These are the claims: {state['claims']}. Combine all the claims and give me a final overall verdict and summary of 50-80 words of all the claims combined."
-        )
+    response = client.models.generate_content(
+        model="gemini-2.5-pro",
+        config={
+            "response_mime_type": "application/json",
+            "response_schema": Result
+        },
+        contents=f"These are the claims: {state['claims']}. Combine all the claims and give me a final overall verdict and summary of 50-80 words of all the claims combined."
+    )
 
-        res = response.parsed.model_dump()
-        
-        return {
-            "overall": res
-        }
+    res = response.parsed.model_dump()
+
+    logger.info("Final Verdict Found!")
+    
+    return {
+        "overall": res
+    }
